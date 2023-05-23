@@ -5,5 +5,7 @@ pystoi==0.3.3
 git+https://github.com/ludlows/python-pesq#egg=pesq
 six
 sounddevice==0.4.0
-torchaudio==0.5.1
-torch==1.5.1+cu101
+torchaudio==0.13.0
+torch==1.13.0+cu117
+--extra-index-url https://download.pytorch.org/whl/cu117
+julius
