@@ -8,7 +8,9 @@
 import json
 import logging
 import os
+import random
 import re
+import shutil
 
 from .audio import Audioset
 
@@ -97,3 +99,38 @@ class NoisyCleanSet:
 
     def __len__(self):
         return len(self.noisy_set)
+
+
+def split_train_val(clean_dir, noisy_dir, matching="sort", ratio=0.1, seed=42):
+    clean_list = os.listdir(clean_dir)
+    noisy_list = os.listdir(noisy_dir)
+
+    match_files(noisy_list, clean_list, matching)
+
+    assert len(clean_list) == len(noisy_list)
+
+    random.seed(seed)
+    val_list_set = set(random.sample(clean_list, int(ratio*len(clean_list))))
+    
+    train_clean_dir, val_clean_dir = split_dir(clean_dir)
+    train_noisy_dir, val_noisy_dir = split_dir(noisy_dir)
+
+    for file in clean_list:
+        if file in val_list_set:
+            shutil.copy2(os.path.join(clean_dir, file), val_clean_dir)
+            shutil.copy2(os.path.join(noisy_dir, file), val_noisy_dir)
+        else:
+            shutil.copy2(os.path.join(clean_dir, file), train_clean_dir)
+            shutil.copy2(os.path.join(noisy_dir, file), train_noisy_dir)
+
+
+def split_dir(dir):
+    folder = os.path.basename(os.path.normpath(dir))
+
+    train_dir = os.path.join(dir, "..", "train_"+folder)
+    os.makedirs(train_dir, exist_ok=True)
+    
+    val_dir = os.path.join(dir, "..", "val_"+folder)
+    os.makedirs(val_dir, exist_ok=True)
+
+    return train_dir, val_dir
